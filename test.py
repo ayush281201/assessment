@@ -14,10 +14,8 @@ client = OpenAI(
 )
 
 try:
-    # Fetch the list of available models
     model_response = client.models.list()
     
-    # Extract model IDs and sort them alphabetically
     model_ids = sorted([model.id for model in model_response.data])
     
     print(f"Total available models: {len(model_ids)}\n")

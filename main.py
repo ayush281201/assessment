@@ -1,4 +1,3 @@
-# topic: str, num_of_ques: int, complexity:str
 import json
 import logging
 import os
@@ -6,8 +5,8 @@ from pathlib import Path
 
 try:
     from dotenv import load_dotenv
-except ModuleNotFoundError:  # pragma: no cover - fallback when package is not installed
-    def load_dotenv(*args, **kwargs):
+except ModuleNotFoundError:
+    def load_dotenv():
         env_path = Path(__file__).resolve().parent / ".env"
         if not env_path.exists():
             return False
@@ -20,7 +19,7 @@ except ModuleNotFoundError:  # pragma: no cover - fallback when package is not i
             key, value = line.split("=", 1)
             values[key.strip()] = value.strip().strip('"\'')
 
-        os.environ.setdefault(key, value)  # type: ignore[name-defined]
+        os.environ.setdefault(key, value)
         for key, value in values.items():
             os.environ.setdefault(key, value)
         return True
@@ -44,24 +43,23 @@ def run_pipeline(topic: str, complexity: str, question_count: int):
     assistant, proxy = create_qa()
 
     prompt = (
-        f"Generate exactly {question_count} distinct questions about the topic '{topic}' "
-        f"at an '{complexity}' complexity level.\n\n"
-        "For each item, return valid JSON in this exact structure:\n"
-        "{\n"
-        '  "questions": [\n'
-        '    {\n'
-        '      "question": "...",\n'
-        '      "answer": "...",\n'
-        '      "reference_url": "..."\n'
-        '    }\n'
-        '  ]\n'
-        "}\n\n"
-        "Important rules:\n"
-        "- Use technical, accurate content.\n"
-        "- Include one verified reference URL per question.\n"
-        "- Call the verify_reference tool for each URL before finalizing it.\n"
-        "- If any URL is not valid, replace it and verify again.\n"
-        "- End your final response with TERMINATE.\n"
+        f"""Generate exactly {question_count} distinct questions about the topic '{topic}' at an '{complexity}' complexity level.
+        For each item, return valid JSON in this exact structure:
+        {{
+          "questions": [
+            {{
+              'question': '...',
+              'answer': '...',
+              'reference_url': '...'
+            }}
+          ]
+        }}
+        Important rules:
+        - Use technical, accurate content.
+        - Include one verified reference URL per question.
+        - Call the verify_reference tool for each URL before finalizing it.
+        - If any URL is not valid, replace it and verify again.
+        - End your final response with TERMINATE."""
     )
 
     logger.info("[*] Starting conversation loop and tool executions...\n")
